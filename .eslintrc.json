@@ -1,0 +1,36 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": ["warn"],
+    "no-console": "off",
+    "prefer-const": "error",
+    "no-var": "error",
+    "arrow-spacing": ["error", {
+      "before": true, "after": true
+    }],
+    "quotes": ["error", "single", {
+      "avoidEscape": true, "allowTemplateLiterals": true
+    }],
+    "eqeqeq": ["error", "always"],
+    "no-duplicate-imports": "error",
+    "no-trailing-spaces": "error",
+    "object-curly-spacing": ["error", "always"],
+    "space-before-function-paren": ["error", {
+        "anonymous": "never",
+        "named": "never",
+        "asyncArrow": "always"
+    }],
+    "no-unreachable": "off",
+    "no-extra-semi": "off"
+  }
+}
