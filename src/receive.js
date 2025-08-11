@@ -9,13 +9,13 @@ const basePath = `data/receives`
 
 export async function receive(browser) {
   logger.info('Starting Template Receiving operation')
-  
+
   // Emit that we're checking the marketplace
-  systemState.emit('marketplaceCheck', { 
+  systemState.emit('marketplaceCheck', {
     status: 'checking',
-    timestamp: new Date().toISOString() 
+    timestamp: new Date().toISOString()
   })
-  
+
   const receiveDefaultTransferId = `__default-receive-logs__`
   const { transferDir, transferId, screenshotDir } = await transferHeader(
     receiveDefaultTransferId,
@@ -54,13 +54,13 @@ export async function receive(browser) {
       transferId,
       'receive_complete',
       100,
-      { 
+      {
         type: 'receive',
         success: true,
         templatesReceived: parcel.templatesCount || 0
       }
     )
-    
+
     // Add to history if we received templates
     if (parcel.templatesCount > 0) {
       systemState.addToHistory({
@@ -75,7 +75,7 @@ export async function receive(browser) {
       transferId,
       'receive_no_templates',
       100,
-      { 
+      {
         type: 'receive',
         success: true,
         templatesReceived: 0

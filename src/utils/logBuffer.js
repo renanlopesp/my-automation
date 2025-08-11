@@ -21,25 +21,25 @@ class LogBuffer extends EventEmitter {
     }
 
     this.buffer.push(formattedLog)
-    
+
     if (this.buffer.length > this.maxSize) {
       this.buffer.shift()
     }
 
     this.emit('log', formattedLog)
-    
+
     return formattedLog
   }
 
   getLogs(options = {}) {
-    const { 
-      limit = 100, 
-      offset = 0, 
+    const {
+      limit = 100,
+      offset = 0,
       level = null,
       source = null,
       search = null,
       startTime = null,
-      endTime = null 
+      endTime = null
     } = options
 
     let filtered = [...this.buffer]
@@ -55,22 +55,22 @@ class LogBuffer extends EventEmitter {
 
     if (search) {
       const regex = new RegExp(search, 'i')
-      filtered = filtered.filter(log => 
-        regex.test(log.message) || 
+      filtered = filtered.filter(log =>
+        regex.test(log.message) ||
         regex.test(JSON.stringify(log.meta))
       )
     }
 
     if (startTime) {
       const start = new Date(startTime).getTime()
-      filtered = filtered.filter(log => 
+      filtered = filtered.filter(log =>
         new Date(log.timestamp).getTime() >= start
       )
     }
 
     if (endTime) {
       const end = new Date(endTime).getTime()
-      filtered = filtered.filter(log => 
+      filtered = filtered.filter(log =>
         new Date(log.timestamp).getTime() <= end
       )
     }
@@ -135,7 +135,7 @@ class WebSocketTransport extends Transport {
     })
 
     const log = this.buffer.add(info)
-    
+
     if (this.broadcast) {
       this.broadcast({
         type: 'logEntry',

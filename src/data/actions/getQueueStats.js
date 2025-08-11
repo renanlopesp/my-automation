@@ -14,27 +14,27 @@ export async function getQueueStats(envName) {
       surql`SELECT count() as count FROM TransferReceive WHERE status = $initial AND manual = false GROUP ALL`,
       { initial: String(TransferReceiveStatus.INITIAL) }
     )
-    
+
     const [receivePending] = await surreal.query(
       surql`SELECT count() as count FROM TransferReceive WHERE status = $pending AND manual = false GROUP ALL`,
       { pending: String(TransferReceiveStatus.PENDING) }
     )
-    
+
     const [receiveProcessing] = await surreal.query(
       surql`SELECT count() as count FROM TransferReceive WHERE status = $processing AND manual = false GROUP ALL`,
       { processing: String(TransferReceiveStatus.PROCESSING) }
     )
-    
+
     const [receiveComplete] = await surreal.query(
       surql`SELECT count() as count FROM TransferReceive WHERE status = $complete AND manual = false GROUP ALL`,
       { complete: String(TransferReceiveStatus.COMPLETE) }
     )
-    
+
     const [receiveError] = await surreal.query(
       surql`SELECT count() as count FROM TransferReceive WHERE status = $error AND manual = false GROUP ALL`,
       { error: String(TransferReceiveStatus.ERROR) }
     )
-    
+
     const receiveStats = [{
       receiveInitial: receiveInitial[0]?.count || 0,
       receivePending: receivePending[0]?.count || 0,
@@ -48,27 +48,27 @@ export async function getQueueStats(envName) {
       surql`SELECT count() as count FROM TransferSend WHERE status = $initial AND manual = false GROUP ALL`,
       { initial: String(TransferSendStatus.INITIAL) }
     )
-    
+
     const [sendPending] = await surreal.query(
       surql`SELECT count() as count FROM TransferSend WHERE status = $pending AND manual = false GROUP ALL`,
       { pending: String(TransferSendStatus.PENDING) }
     )
-    
+
     const [sendProcessing] = await surreal.query(
       surql`SELECT count() as count FROM TransferSend WHERE status = $processing AND manual = false GROUP ALL`,
       { processing: String(TransferSendStatus.PROCESSING) }
     )
-    
+
     const [sendComplete] = await surreal.query(
       surql`SELECT count() as count FROM TransferSend WHERE status = $complete AND manual = false GROUP ALL`,
       { complete: String(TransferSendStatus.COMPLETE) }
     )
-    
+
     const [sendError] = await surreal.query(
       surql`SELECT count() as count FROM TransferSend WHERE status = $error AND manual = false GROUP ALL`,
       { error: String(TransferSendStatus.ERROR) }
     )
-    
+
     const sendStats = [{
       sendInitial: sendInitial[0]?.count || 0,
       sendPending: sendPending[0]?.count || 0,
@@ -82,8 +82,8 @@ export async function getQueueStats(envName) {
       env: envName,
       timestamp: new Date().toISOString(),
       receive: {
-        total: (receiveStats[0]?.receiveInitial || 0) + 
-               (receiveStats[0]?.receivePending || 0) + 
+        total: (receiveStats[0]?.receiveInitial || 0) +
+               (receiveStats[0]?.receivePending || 0) +
                (receiveStats[0]?.receiveProcessing || 0),
         initial: receiveStats[0]?.receiveInitial || 0,
         pending: receiveStats[0]?.receivePending || 0,
@@ -93,12 +93,12 @@ export async function getQueueStats(envName) {
       },
       rename: {
         // Rename uses the same TransferReceive table
-        toRename: (receiveStats[0]?.receivePending || 0) + 
+        toRename: (receiveStats[0]?.receivePending || 0) +
                   (receiveStats[0]?.receiveInitial || 0),
       },
       send: {
-        total: (sendStats[0]?.sendInitial || 0) + 
-               (sendStats[0]?.sendPending || 0) + 
+        total: (sendStats[0]?.sendInitial || 0) +
+               (sendStats[0]?.sendPending || 0) +
                (sendStats[0]?.sendProcessing || 0),
         initial: sendStats[0]?.sendInitial || 0,
         pending: sendStats[0]?.sendPending || 0,
@@ -192,7 +192,7 @@ export async function getTransferHistory(envName, limit = 20) {
  */
 export async function getAllQueuesStats(environments = ['local', 'dev', 'prod']) {
   const results = {}
-  
+
   for (const env of environments) {
     try {
       results[env] = await getQueueStats(env)
@@ -201,6 +201,6 @@ export async function getAllQueuesStats(environments = ['local', 'dev', 'prod'])
       results[env] = null
     }
   }
-  
+
   return results
 }

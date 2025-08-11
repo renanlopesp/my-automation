@@ -2,7 +2,6 @@ import { WEBFLOW_LOGIN_URL } from '#config'
 import { preparePage, takeScreenshot } from '#ops'
 import {
   humanType,
-  humanClick,
   simulateReading,
   addRandomMouseMovement,
   sleep,

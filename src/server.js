@@ -225,8 +225,8 @@ app.post('/api/trigger/send', async (req, res) => {
 // Get recent logs from buffer with filtering
 app.get('/api/logs', async (req, res) => {
   try {
-    const { 
-      limit = 100, 
+    const {
+      limit = 100,
       offset = 0,
       level,
       source,
@@ -234,7 +234,7 @@ app.get('/api/logs', async (req, res) => {
       startTime,
       endTime
     } = req.query
-    
+
     const result = logBuffer.getLogs({
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -244,7 +244,7 @@ app.get('/api/logs', async (req, res) => {
       startTime,
       endTime
     })
-    
+
     res.json(result)
   } catch (error) {
     res.status(500).json({ error: 'Failed to get logs', message: error.message })
@@ -315,11 +315,11 @@ app.get('/api/queues', async (req, res) => {
   try {
     const envs = NODE_ENV === 'development' ? ['local'] : ['dev', 'prod']
     const results = {}
-    
+
     for (const env of envs) {
       results[env] = await getQueueStats(env)
     }
-    
+
     res.json(results)
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -363,7 +363,7 @@ app.get('/api/stats/detailed', async (req, res) => {
       },
       timestamp: new Date().toISOString(),
     }
-    
+
     for (const env of envs) {
       const envStats = await getQueueStats(env)
       if (envStats) {
@@ -374,7 +374,7 @@ app.get('/api/stats/detailed', async (req, res) => {
         stats.summary.totalError += envStats.receive.error + envStats.send.error
       }
     }
-    
+
     res.json(stats)
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -399,7 +399,7 @@ let queuePollInterval = null
 async function pollQueues() {
   try {
     const envs = NODE_ENV === 'development' ? ['local'] : ['dev', 'prod']
-    
+
     for (const env of envs) {
       const stats = await getQueueStats(env)
       if (stats) {
@@ -435,7 +435,7 @@ const wss = new WebSocketServer({ server })
 wss.on('connection', (ws, req) => {
   logger.info(`New WebSocket connection from ${req.socket.remoteAddress}`)
   wsClients.add(ws)
-  
+
   // Start queue polling when clients connect
   startQueuePolling()
 
@@ -473,7 +473,7 @@ wss.on('connection', (ws, req) => {
   ws.on('close', () => {
     wsClients.delete(ws)
     logger.info('WebSocket connection closed')
-    
+
     // Stop polling if no clients connected
     stopQueuePolling()
   })
@@ -486,15 +486,15 @@ wss.on('connection', (ws, req) => {
 // Graceful shutdown handler
 function gracefulShutdown(signal) {
   logger.info(`${signal} received, closing server...`)
-  
+
   // Stop log file watcher
   logWatcher.stop()
-  
+
   // Clear queue polling interval
   if (queuePollInterval) {
     clearInterval(queuePollInterval)
   }
-  
+
   // Close all WebSocket connections
   wsClients.forEach(client => {
     if (client.readyState === 1) {
@@ -502,13 +502,13 @@ function gracefulShutdown(signal) {
     }
   })
   wsClients.clear()
-  
+
   // Close HTTP server
   server.close(() => {
     logger.info('Server closed')
     process.exit(0)
   })
-  
+
   // Force exit after 10 seconds
   setTimeout(() => {
     logger.error('Could not close connections in time, forcefully shutting down')

@@ -1,8 +1,8 @@
-import { sleep } from "#utils";
+import { sleep } from '#utils';
 
 export async function waitForNavigation(
   page,
-  waitUntil = "networkidle0",
+  waitUntil = 'networkidle0',
   timeout = 1000,
   sleepout = 1000
 ) {

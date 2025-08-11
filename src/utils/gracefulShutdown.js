@@ -2,7 +2,7 @@ import { logger } from './logger.js'
 import systemState from '../state.js'
 
 let isShuttingDown = false
-let shutdownCallbacks = []
+const shutdownCallbacks = []
 
 export function registerShutdownCallback(callback) {
   shutdownCallbacks.push(callback)

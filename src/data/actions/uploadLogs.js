@@ -57,7 +57,7 @@ export async function uploadLogs(local, destDir) {
     logger.info('AWS credentials not configured, skipping S3 upload');
     return [];
   }
-  
+
   const s3Client = new S3Client({
     region: 'us-east-1',
     credentials: {

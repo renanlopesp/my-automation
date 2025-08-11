@@ -21,22 +21,22 @@ export async function rename(envName, browser) {
   const basePath = `data/${envName}/renames`
 
   logger.info('Starting Template Renaming operation')
-  
+
   // Emit queue check event
   systemState.emit('queueCheck', {
     env: envName,
     type: 'rename',
     status: 'checking'
   })
-  
+
   const transfers = await getNextReceives(envName)
-  
+
   // Update queue stats
   const queueStats = await getQueueStats(envName)
   if (queueStats) {
     systemState.updateQueue(envName, queueStats)
   }
-  
+
   if (transfers?.length === 0) {
     logger.info('No transfers to do')
     systemState.emit('queueEmpty', {
@@ -45,14 +45,14 @@ export async function rename(envName, browser) {
     })
     return
   }
-  
+
   // Emit queue found event
   systemState.emit('queueUpdate', {
     env: envName,
     type: 'rename',
     count: transfers.length,
-    transfers: transfers.map(t => ({ 
-      id: t.id, 
+    transfers: transfers.map(t => ({
+      id: t.id,
       templateName: t.templateName || 'Unknown'
     }))
   })
@@ -75,7 +75,7 @@ export async function rename(envName, browser) {
         templateId: transfer.templateId
       }
     )
-    
+
     // Set as active transfer
     systemState.setActiveTransfer({
       id: transferId,
@@ -118,7 +118,7 @@ export async function rename(envName, browser) {
           action: 'Renaming template...'
         }
       )
-      
+
       const parcel = await renameTransfer(envName, browser, options, transfer)
       await setReceiveStatus(
         envName,
@@ -139,7 +139,7 @@ export async function rename(envName, browser) {
             newName: parcel.newName || transfer.templateName
           }
         )
-        
+
         // Add to history
         systemState.addToHistory({
           id: transferId,
@@ -149,7 +149,7 @@ export async function rename(envName, browser) {
           newName: parcel.newName || transfer.templateName,
           status: 'complete'
         })
-        
+
         // switching transport back
         switchTransportTo('./general.log')
 
@@ -178,7 +178,7 @@ export async function rename(envName, browser) {
           }
         )
       }
-      
+
       // Remove from active transfers
       systemState.removeActiveTransfer(transferId)
     } catch (err) {

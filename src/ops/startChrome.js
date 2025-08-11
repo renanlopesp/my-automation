@@ -1,6 +1,6 @@
 import 'dotenv/config'
-import { exec, spawn } from 'child_process'
-import { readFile, writeFile } from 'fs/promises'
+import { spawn } from 'child_process'
+import { writeFile } from 'fs/promises'
 
 import { CHROME_PATH } from '#config'
 import { logger, sleep, logLine } from '#utils'
@@ -9,50 +9,6 @@ import { chromeCliArguments } from '../chrome-cli-arguments.js'
 let controller = new AbortController()
 const PID_FILE = './CHROME_PID'
 
-async function getChromeCanaryPid(appPath) {
-  return new Promise((resolve, reject) => {
-    const findPidCommand = `ps aux | grep "${appPath}" | grep -v grep | awk '{print $2}'`
-
-    exec(findPidCommand, (error, stdout, stderr) => {
-      if (error) {
-        logger.warn(`❌ Error finding PID: ${error.message}`)
-        return reject(error)
-      }
-
-      if (stderr) {
-        logger.warn(`Heads up looking for PID: ${stderr}`)
-      }
-
-      const pid = stdout.trim()
-      if (!pid) {
-        logger.warn('No process found for Google Chrome Canary.')
-        return resolve(undefined)
-      }
-
-      resolve(pid)
-    })
-  })
-}
-
-async function killLastChrome(pid) {
-  return new Promise((resolve, reject) => {
-    exec(`kill -9 ${pid}`, (error, stdout, stderr) => {
-      if (stderr) {
-        logger.warn(`${stderr}`)
-      }
-
-      if (error || stderr) {
-        logger.warn(`Failed to kill Chrome`)
-        logger.warn(`\n---\n${error.message}\n---`)
-        return reject()
-      } else {
-        logger.info(`Last Chrome closed pid: ${pid}`)
-      }
-
-      return resolve()
-    })
-  })
-}
 
 export async function closeChrome() {
   return new Promise((resolve, reject) => {

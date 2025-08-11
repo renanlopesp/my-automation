@@ -108,13 +108,13 @@ class SystemState extends EventEmitter {
       timestamp: new Date().toISOString(),
       task: this.state.currentTask,
     }
-    
+
     this.state.errors.push(errorInfo)
     // Keep only last 100 errors
     if (this.state.errors.length > 100) {
       this.state.errors = this.state.errors.slice(-100)
     }
-    
+
     this.state.stats.errors++
     this.state.stats.lastError = errorInfo
     this.emit('error', errorInfo)
@@ -160,23 +160,23 @@ class SystemState extends EventEmitter {
 
   setActiveTransfer(transfer) {
     this.state.currentTransfer = transfer
-    
+
     // Add to active transfers list if not already there
     const existingIndex = this.state.activeTransfers.findIndex(
       t => t.id === transfer.id
     )
-    
+
     if (existingIndex >= 0) {
       this.state.activeTransfers[existingIndex] = transfer
     } else {
       this.state.activeTransfers.push(transfer)
     }
-    
+
     // Keep only last 10 active transfers
     if (this.state.activeTransfers.length > 10) {
       this.state.activeTransfers = this.state.activeTransfers.slice(-10)
     }
-    
+
     this.emit('transferUpdate', transfer)
   }
 
@@ -184,11 +184,11 @@ class SystemState extends EventEmitter {
     this.state.activeTransfers = this.state.activeTransfers.filter(
       t => t.id !== transferId
     )
-    
+
     if (this.state.currentTransfer?.id === transferId) {
       this.state.currentTransfer = null
     }
-    
+
     this.emit('transferComplete', { transferId })
   }
 
@@ -197,12 +197,12 @@ class SystemState extends EventEmitter {
       ...transfer,
       completedAt: new Date().toISOString(),
     })
-    
+
     // Keep only last 50 transfers in history
     if (this.state.transferHistory.length > 50) {
       this.state.transferHistory = this.state.transferHistory.slice(0, 50)
     }
-    
+
     this.emit('historyUpdate', this.state.transferHistory)
   }
 
@@ -214,7 +214,7 @@ class SystemState extends EventEmitter {
       timestamp: new Date().toISOString(),
       ...details,
     }
-    
+
     // Update current transfer if it matches
     if (this.state.currentTransfer?.id === transferId) {
       this.state.currentTransfer = {
@@ -224,7 +224,7 @@ class SystemState extends EventEmitter {
         lastUpdate: new Date().toISOString(),
       }
     }
-    
+
     this.emit('transferProgress', progressData)
   }
 }

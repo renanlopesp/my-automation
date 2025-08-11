@@ -27,22 +27,22 @@ export async function send(envName, browser) {
   const basePath = `data/${envName}/sends`
 
   logger.info('Starting Template Sending operation')
-  
+
   // Emit queue check event
   systemState.emit('queueCheck', {
     env: envName,
     type: 'send',
     status: 'checking'
   })
-  
+
   const transfer = await getLatestTransfer(envName)
-  
+
   // Update queue stats
   const queueStats = await getQueueStats(envName)
   if (queueStats) {
     systemState.updateQueue(envName, queueStats)
   }
-  
+
   if (!transfer?.id) {
     logger.info('No transfers to do')
     systemState.emit('queueEmpty', {
@@ -87,7 +87,7 @@ export async function send(envName, browser) {
     })
     return null
   }
-  
+
   // Emit transfer found event
   systemState.emit('transferFound', {
     env: envName,
@@ -104,7 +104,7 @@ export async function send(envName, browser) {
     transfer,
     basePath,
   )
-  
+
   // Emit starting send for this transfer
   systemState.emitTransferProgress(
     transferId,
@@ -118,7 +118,7 @@ export async function send(envName, browser) {
       fromUser: transfer.fromUser?.email
     }
   )
-  
+
   // Set as active transfer
   systemState.setActiveTransfer({
     id: transferId,
@@ -147,7 +147,7 @@ export async function send(envName, browser) {
 
     await setTransferStatus(envName, transferId, TransferSendStatus.PROGRESS)
     logger.info(`Transfer: \n ${JSON.stringify(transfer, null, 2)}\n\n`)
-    
+
     // Emit validation progress
     systemState.emitTransferProgress(
       transferId,
@@ -193,7 +193,7 @@ export async function send(envName, browser) {
         transfer.paymentLog.id.toString().split(':').pop(),
         crypto.randomUUID(),
       ].join('-')
-      
+
       // Emit transfer processing
       systemState.emitTransferProgress(
         transferId,
@@ -214,7 +214,7 @@ export async function send(envName, browser) {
       })
 
       transferStatus = TransferSendStatus.COMPLETE
-      
+
       // Emit successful send
       systemState.emitTransferProgress(
         transferId,
@@ -228,7 +228,7 @@ export async function send(envName, browser) {
           toUser: transfer.toUser?.email
         }
       )
-      
+
       // Add to history
       systemState.addToHistory({
         id: transferId,
@@ -242,7 +242,7 @@ export async function send(envName, browser) {
     } catch (err) {
       transferStatus = TransferSendStatus.PENDING
       logger.error(err)
-      
+
       // Emit send error
       systemState.emitTransferProgress(
         transferId,
@@ -273,13 +273,13 @@ export async function send(envName, browser) {
       }
 
       await setTransferStake(envName, 'TransferSend', transferId, stake)
-      
+
       // Remove from active transfers
       systemState.removeActiveTransfer(transferId)
     }
   } catch (err) {
     await setTransferStatus(envName, transferId, TransferSendStatus.PENDING)
-    
+
     // Emit validation error
     systemState.emitTransferProgress(
       transferId,
@@ -306,7 +306,7 @@ export async function send(envName, browser) {
     }
 
     await setTransferStake(envName, 'TransferSend', transferId, stake)
-    
+
     // Remove from active transfers even on error
     systemState.removeActiveTransfer(transferId)
   }

@@ -84,7 +84,6 @@ export class CaptchaDetector {
       const selectors = this.getCaptchaSelectors()
       let captchaFound = false
       let captchaType = 'unknown'
-      let captchaElement = null
 
       // Check each selector
       for (const selector of selectors) {
@@ -104,7 +103,6 @@ export class CaptchaDetector {
 
             if (isVisible) {
               captchaFound = true
-              captchaElement = element
               captchaType = this.determineCaptchaType(selector)
               console.log(
                 `🚨 CAPTCHA detected: ${captchaType} (selector: ${selector})`,
@@ -313,7 +311,6 @@ export class CaptchaDetector {
         elapsed += checkInterval
 
         // Check if we've navigated away from the CAPTCHA page
-        const currentUrl = page.url()
         const isStillOnCaptchaPage = await page.evaluate(() => {
           const bodyText = document.body.innerText.toLowerCase()
           const title = document.title.toLowerCase()

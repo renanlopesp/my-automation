@@ -30,7 +30,7 @@ class LogFileWatcher extends EventEmitter {
         this.position = stats.size
         logger.info(`Starting log file watcher from position ${this.position}`)
       }
-      
+
       // Watch for changes using fs.watchFile (polling every 500ms)
       this.watcher = fs.watchFile(this.filepath, { interval: 500 }, (curr, prev) => {
         // File created
@@ -51,7 +51,7 @@ class LogFileWatcher extends EventEmitter {
           }
         }
       })
-      
+
       this.emit('started')
       logger.info(`Log file watcher started for ${this.filepath}`)
     } catch (error) {
@@ -62,19 +62,19 @@ class LogFileWatcher extends EventEmitter {
 
   readNewLines(startPos, endPos) {
     if (this.isReading) return
-    
+
     this.isReading = true
     const bytesToRead = endPos - startPos
-    
+
     // Don't read if nothing new
     if (bytesToRead <= 0) {
       this.isReading = false
       return
     }
-    
+
     let stream = null
     let rl = null
-    
+
     try {
       // Create read stream from last position
       stream = fs.createReadStream(this.filepath, {
@@ -82,18 +82,18 @@ class LogFileWatcher extends EventEmitter {
         end: endPos - 1, // end is inclusive, so subtract 1
         encoding: 'utf8'
       })
-      
+
       // Increase max listeners to prevent warnings
       stream.setMaxListeners(50)
-      
+
       rl = readline.createInterface({
         input: stream,
         crlfDelay: Infinity // Handle all line break types
       })
-      
+
       rl.on('line', (line) => {
         if (!line.trim()) return // Skip empty lines
-        
+
         // Filter out known harmless Chrome warnings
         if (line.includes('google_apis/gcm/engine/registration_request.cc') ||
             line.includes('DEPRECATED_ENDPOINT') ||
@@ -104,20 +104,20 @@ class LogFileWatcher extends EventEmitter {
             line.includes('DevTools listening on ws://')) {
           return // Skip these known Chrome internal warnings
         }
-        
+
         try {
           // Parse Winston JSON log format
           const log = JSON.parse(line)
-          
+
           // Add source if not present
           if (!log.source) {
             log.source = 'main'
           }
-          
+
           // Deduplication check
           const logKey = `${log.timestamp}_${log.level}_${log.message}`
           const now = Date.now()
-          
+
           // Check if we've seen this log recently
           if (this.recentLogs.has(logKey)) {
             const lastSeen = this.recentLogs.get(logKey)
@@ -126,7 +126,7 @@ class LogFileWatcher extends EventEmitter {
               return
             }
           }
-          
+
           // Store in cache and clean old entries
           this.recentLogs.set(logKey, now)
           if (this.recentLogs.size > this.cacheMaxSize) {
@@ -138,7 +138,7 @@ class LogFileWatcher extends EventEmitter {
               }
             }
           }
-          
+
           this.emit('newLog', log)
           this.retryCount = 0 // Reset retry count on success
         } catch (err) {
@@ -149,20 +149,20 @@ class LogFileWatcher extends EventEmitter {
             if (match) {
               const [, level, message] = match
               const timestamp = new Date().toISOString()
-              
+
               // Deduplication check for non-JSON logs
               const logKey = `${timestamp}_${level.toLowerCase()}_${message.trim()}`
               const now = Date.now()
-              
+
               if (this.recentLogs.has(logKey)) {
                 const lastSeen = this.recentLogs.get(logKey)
                 if (now - lastSeen < this.cacheTimeout) {
                   return // Skip duplicate
                 }
               }
-              
+
               this.recentLogs.set(logKey, now)
-              
+
               this.emit('newLog', {
                 level: level.toLowerCase(),
                 message: message.trim(),
@@ -174,7 +174,7 @@ class LogFileWatcher extends EventEmitter {
           // Ignore lines that can't be parsed
         }
       })
-      
+
       rl.on('error', (error) => {
         logger.error('Error reading log file:', error)
         // IMPORTANT: Update position even on error to avoid re-reading same content
@@ -191,7 +191,7 @@ class LogFileWatcher extends EventEmitter {
           stream.destroy()
         }
       })
-      
+
       rl.on('close', () => {
         this.position = endPos
         this.isReading = false
