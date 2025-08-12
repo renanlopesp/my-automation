@@ -14,9 +14,15 @@ module.exports = {
       time: true,
       env: {
         NODE_ENV: 'development',
+        CHROME_HEADLESS: 'false',
+      },
+      env_headless: {
+        NODE_ENV: 'development',
+        CHROME_HEADLESS: 'true',
       },
       env_production: {
         NODE_ENV: 'production',
+        CHROME_HEADLESS: 'true',
       },
     },
     {
@@ -34,10 +40,17 @@ module.exports = {
       env: {
         NODE_ENV: 'development',
         PORT: 3001,
+        CHROME_HEADLESS: 'false',
+      },
+      env_headless: {
+        NODE_ENV: 'development',
+        PORT: 3001,
+        CHROME_HEADLESS: 'true',
       },
       env_production: {
         NODE_ENV: 'production',
         PORT: 3001,
+        CHROME_HEADLESS: 'true',
       },
     },
     {
@@ -55,6 +68,10 @@ module.exports = {
       out_file: './logs/dashboard-out.log',
       time: true,
       env: {
+        NODE_ENV: 'development',
+        PORT: 5173,
+      },
+      env_headless: {
         NODE_ENV: 'development',
         PORT: 5173,
       },

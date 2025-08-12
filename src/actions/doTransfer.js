@@ -32,7 +32,7 @@ export async function doTransfer(page, options, url) {
 
   // click to transfer
   try {
-    const xpathTransfer = `xpath///button[contains(span/span/text(),'Transfer to ${targetEmail}')]`
+    const xpathTransfer = `xpath=//button[contains(span/span/text(),'Transfer to ${targetEmail}')]`
     await page.locator(xpathTransfer).waitFor({ timeout: 1000 * 3 })
     await page.click(xpathTransfer)
     await sleep(1000 * 3)

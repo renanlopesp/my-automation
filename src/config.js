@@ -18,7 +18,7 @@ export const CHROME_PATH =
 
 export const CHROME_PROFILE = process.env.CHROME_PROFILE ?? 'Default'
 export const CHROME_DATA_DIR = process.env.CHROME_DATA_DIR || '/tmp/chrome-data'
-export const CHROME_HEADLESS = false // Default to true unless explicitly set to 'false'
+export const CHROME_HEADLESS = process.env.CHROME_HEADLESS !== 'false' // Default to true unless explicitly set to 'false'
 export const CHROME_STEALTH_MODE = process.env.CHROME_STEALTH_MODE ?? 'maximum' // 'basic', 'enhanced', 'maximum'
 export const TEMPLACE_OPTION_ID = process.env.TEMPLACE_OPTION_ID
 

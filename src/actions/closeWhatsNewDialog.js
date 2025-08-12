@@ -9,12 +9,12 @@ export async function closeWhatsNewDialog(page, options) {
 
   await waitForSelector(
     page,
-    `xpath/${xpath.whatsNew}`,
+    `xpath=${xpath.whatsNew}`,
     SECOND,
     3,
     async () => {
       logger.info(`closeWhatsNewDialog: What's new found`)
-      await page.click(`xpath/${xpath.whatsNewClose}`)
+      await page.click(`xpath=${xpath.whatsNewClose}`)
     },
   )
 }

@@ -89,7 +89,7 @@ export async function renameTemplate(page, options) {
 
   try {
     const templateInternalUrl = await page.url()
-    const xpathSave = `xpath///button[contains(span/span/text(),'Save')]`
+    const xpathSave = `xpath=//button[contains(span/span/text(),'Save')]`
     await page.locator(xpathSave).waitFor({ timeout: 1000 * 3 })
     await page.click(xpathSave)
     await takeScreenshot(page, `rename-7-save`, options)

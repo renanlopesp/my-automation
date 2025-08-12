@@ -27,6 +27,18 @@
       "result": {
         "success": true
       }
+    },
+    {
+      "id": "task_1754964303650_y2oeutoja",
+      "type": "receive",
+      "env": "local",
+      "status": "failed",
+      "createdAt": "2025-08-12T02:05:03.650Z",
+      "triggeredBy": "api",
+      "timestamp": "2025-08-12T02:05:03.650Z",
+      "startedAt": "2025-08-12T02:05:19.417Z",
+      "failedAt": "2025-08-12T02:10:00.000Z",
+      "error": "Process interrupted"
     }
   ]
 }

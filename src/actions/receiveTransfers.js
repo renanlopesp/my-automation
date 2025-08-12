@@ -21,7 +21,7 @@ async function nagivateToReceive(page, browser, options, atIndex = undefined) {
   )
 
   try {
-    await page.locator(`xpath/${xpath.receiveContainer}`).waitFor({
+    await page.locator(`xpath=${xpath.receiveContainer}`).waitFor({
       timeout: SECONDS_30,
     })
   } catch (err) {
@@ -35,7 +35,7 @@ async function nagivateToReceive(page, browser, options, atIndex = undefined) {
   await closeWhatsNewDialog(page, options)
 
   try {
-    await page.locator(`xpath/${xpath.receiveZero}`).waitFor({
+    await page.locator(`xpath=${xpath.receiveZero}`).waitFor({
       timeout: SECOND * 10, // Increase timeout slightly
     })
   } catch (err) {
@@ -69,13 +69,13 @@ async function transferIn(page, options, atIndex) {
   // double-checking id
   const [receivingId] = await getAttributeFromSelector(
     page,
-    `xpath/${foundXpath}//p[@data-text="true"]`,
+    `xpath=${foundXpath}//p[@data-text="true"]`,
     'innerText',
   )
   logger.info(`Receiving receivingId:, ${receivingId}`)
 
   // open select menu
-  const selectButton = `xpath/${foundXpath}//button[@role="combobox"]`
+  const selectButton = `xpath=${foundXpath}//button[@role="combobox"]`
   await page.locator(selectButton).waitFor({
     timeout: SECONDS_30,
   })
@@ -85,7 +85,7 @@ async function transferIn(page, options, atIndex) {
   await sleep(200)
 
   // select templace
-  const templaceOption = `xpath/${xpath.templaceOption}`
+  const templaceOption = `xpath=${xpath.templaceOption}`
   await page.locator(templaceOption).waitFor({ timeout: SECONDS_30 })
   await page.click(templaceOption)
   await sleep(200)
@@ -101,7 +101,7 @@ async function transferIn(page, options, atIndex) {
   await takeScreenshot(page, `receive${indexString}-3-select-templace`, options)
 
   // accepting transfer
-  const acceptButton = `xpath/${foundXpath}//button[span/span[contains(text(), "Accept")]]`
+  const acceptButton = `xpath=${foundXpath}//button[span/span[contains(text(), "Accept")]]`
   await page.locator(acceptButton).waitFor({ timeout: SECONDS_30 })
   await page.click(acceptButton)
   await takeScreenshot(page, `receive${indexString}-4-accept`, options)
@@ -141,7 +141,7 @@ export async function receiveTransfers(page, browser, options) {
 
       receivedTemplates = await getAttributeFromSelector(
         page,
-        `xpath/${xpath.receiveTitle}`,
+        `xpath=${xpath.receiveTitle}`,
         'innerText',
       )
       logger.info(`Transfers left: ${receivedTemplates.length}`)
