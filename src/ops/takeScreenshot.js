@@ -1,5 +1,5 @@
-/** @typedef {import("puppeteer").Page} Page */
-/** @typedef {import("puppeteer").Browser} Browser */
+/** @typedef {import("patchright").Page} Page */
+/** @typedef {import("patchright").Browser} Browser */
 /** @typedef {} TransferOptions */
 
 import { logger } from '#utils'

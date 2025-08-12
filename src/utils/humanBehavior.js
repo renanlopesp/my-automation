@@ -12,7 +12,7 @@ export function randomDelay(min = 100, max = 300) {
 
 /**
  * Simulate human-like typing with random delays between keystrokes
- * @param {import("puppeteer").Page} page - Puppeteer page
+ * @param {import("patchright").Page} page - Patchright page
  * @param {string} selector - CSS selector for the input field
  * @param {string} text - Text to type
  * @param {Object} options - Options for typing behavior
@@ -27,13 +27,13 @@ export async function humanType(page, selector, text, options = {}) {
 
   // Clear the field first if requested
   if (clearFirst) {
-    await page.click(selector, { clickCount: 3 })
+    await page.locator(selector).click({ clickCount: 3 })
     await sleep(randomDelay(100, 200))
   }
 
   // Type each character with human-like delays
   for (let i = 0; i < text.length; i++) {
-    await page.type(selector, text[i], {
+    await page.locator(selector).pressSequentially(text[i], {
       delay: randomDelay(minDelay, maxDelay),
     })
 
@@ -51,7 +51,7 @@ export async function humanType(page, selector, text, options = {}) {
 
 /**
  * Simulate human-like mouse movement before clicking
- * @param {import("puppeteer").Page} page - Puppeteer page
+ * @param {import("patchright").Page} page - Patchright page
  * @param {string} selector - CSS selector for the element to click
  * @param {Object} options - Options for click behavior
  */
@@ -62,7 +62,7 @@ export async function humanClick(page, selector, options = {}) {
     doubleClick = false,
   } = options
 
-  const element = await page.$(selector)
+  const element = await page.locator(selector).first()
   if (!element) {
     throw new Error(`Element not found: ${selector}`)
   }
@@ -87,9 +87,9 @@ export async function humanClick(page, selector, options = {}) {
   await sleep(delay)
 
   if (doubleClick) {
-    await page.click(selector, { clickCount: 2 })
+    await page.locator(selector).click({ clickCount: 2 })
   } else {
-    await page.click(selector)
+    await page.locator(selector).click()
   }
 
   // Small delay after click
@@ -98,7 +98,7 @@ export async function humanClick(page, selector, options = {}) {
 
 /**
  * Simulate human-like scrolling behavior
- * @param {import("puppeteer").Page} page - Puppeteer page
+ * @param {import("patchright").Page} page - Patchright page
  * @param {Object} options - Options for scrolling behavior
  */
 export async function humanScroll(page, options = {}) {
@@ -115,10 +115,10 @@ export async function humanScroll(page, options = {}) {
 
 /**
  * Add random mouse movements to make behavior more human-like
- * @param {import("puppeteer").Page} page - Puppeteer page
+ * @param {import("patchright").Page} page - Patchright page
  */
 export async function addRandomMouseMovement(page) {
-  const viewport = page.viewport()
+  const viewport = page.viewportSize()
   const x = Math.random() * viewport.width
   const y = Math.random() * viewport.height
 
@@ -150,11 +150,11 @@ export async function simulateReading(textLength = 100, options = {}) {
 
 /**
  * Wait for page load with human-like behavior
- * @param {import("puppeteer").Page} page - Puppeteer page
+ * @param {import("patchright").Page} page - Patchright page
  */
 export async function waitForPageLoadHuman(page) {
   // Wait for initial load
-  await page.waitForNavigation({ waitUntil: 'networkidle0' })
+  await page.waitForLoadState('networkidle')
 
   // Add human-like delay
   await sleep(randomDelay(1000, 2000))

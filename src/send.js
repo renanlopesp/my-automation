@@ -14,8 +14,10 @@ import {
   uploadLogs,
   getQueueStats,
 } from '#dataActions'
+import { preparePage } from '#ops'
 import { logger, switchTransportTo } from '#utils'
 import systemState from './state.js'
+import { tabManager } from './utils/tabManager.js'
 
 export async function send(envName, browser) {
   if (!envName) {
@@ -187,6 +189,10 @@ export async function send(envName, browser) {
     }
 
     let transferStatus = TransferSendStatus.PENDING
+    
+    // Create a page for the transfer operations
+    const page = await preparePage(browser)
+    
     try {
       const templateTransferName = [
         transfer.product.slug,
@@ -207,7 +213,7 @@ export async function send(envName, browser) {
         }
       )
 
-      await transferTemplate(browser, {
+      await transferTemplate(page, browser, {
         ...options,
         templateName: `${envName}:::${transfer.product.owner.email}:::${transfer.product.id.toString()}`,
         templateTransferName,
@@ -256,6 +262,12 @@ export async function send(envName, browser) {
         }
       )
     } finally {
+      // Release the tab back to the pool instead of closing
+      if (page) {
+        await tabManager.releaseTab(page)
+        logger.info('Released tab back to pool after send operation')
+      }
+      
       // await closeChrome()
 
       await setTransferStatus(envName, transferId, transferStatus)

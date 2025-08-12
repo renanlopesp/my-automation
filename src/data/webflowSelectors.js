@@ -5,8 +5,8 @@ const modalFooter = 'div[data-sc="ModalFooter"]'
 // data-automation-id="site-transfer-
 // const receiveContainer = 'div[data-automation-id^="terracota-"]';
 const receiveContainer = '//main[@data-automation-id="main-content"]'
-const receiveZero = `(${receiveContainer}/div[@data-automation-id])[1]`
-const receiveTitle = `(${receiveContainer}/div[@data-automation-id])//p[@data-text="true"]`
+const receiveZero = `(${receiveContainer}//div[@data-automation-id])[1]`
+const receiveTitle = `${receiveContainer}//div[@data-automation-id]//p[@data-text="true"]`
 const templaceOption = `//span[@data-automation-id="overlay"]//div/div/button[@data-automation-id="${TEMPLACE_OPTION_ID}"]`
 const whatsNew = `//div[contains(text(), "What's new")]`
 const whatsNewClose = `//button[@data-automation-id="modal-close-button"]`

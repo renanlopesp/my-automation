@@ -10,7 +10,7 @@ export async function waitForSelector(
   for await (const i of Array.from(Array(tries)).map((_, index) => index)) {
     logger.info(`looking ${i}, for: ${selector}`)
     try {
-      await page.waitForSelector(selector, { timeout })
+      await page.locator(selector).waitFor({ timeout })
       logger.info(`found: ${selector}`)
       await runIfFound()
       break
@@ -20,5 +20,5 @@ export async function waitForSelector(
     }
   }
 
-  return page.$$(selector)
+  return page.locator(selector).all()
 }

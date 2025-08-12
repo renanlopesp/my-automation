@@ -1,12 +1,11 @@
 // https://webflow.com/dashboard/sites/transfers
 
 import { SECOND } from '#data'
-import { preparePage } from '#ops'
 import { logger, sleep } from '#utils'
 import { renameTemplate } from '#actions'
 
-export async function renameTransfer(envName, browser, options, transfer) {
-  const page = await preparePage(browser)
+export async function renameTransfer(envName, page, browser, options, transfer) {
+  // Use the existing page instead of creating a new one
 
   try {
     if (!transfer.renameTo) {
@@ -24,18 +23,14 @@ export async function renameTransfer(envName, browser, options, transfer) {
 
     await sleep(SECOND * 3)
 
-    await page.close()
+    // Keep the page open to maintain session
     return renamed
   } catch (err) {
     logger.error(`Transfer Error: ${err.message}`)
     const message = `Error on transfer: ${options.id}, on item: ${options.templateName}`
 
-    await page.close()
+    // Keep the page open to maintain session
     return false
     throw new Error(message)
-  } finally {
-    if (!page.isClosed) {
-      await page.close()
-    }
   }
 }

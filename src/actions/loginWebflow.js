@@ -1,5 +1,5 @@
 import { WEBFLOW_LOGIN_URL } from '#config'
-import { preparePage, takeScreenshot } from '#ops'
+import { takeScreenshot } from '#ops'
 import {
   humanType,
   simulateReading,
@@ -9,9 +9,9 @@ import {
 } from '#utils'
 import { createSafePage } from '../utils/safePage.js'
 
-export async function loginWebflow(browser, options) {
+export async function loginWebflow(page, browser, options) {
   const { selectors, credentials } = options
-  const page = await preparePage(browser)
+  // Use the existing page instead of creating a new one
 
   const safePage = createSafePage(page)
 
@@ -22,7 +22,7 @@ export async function loginWebflow(browser, options) {
     await simulateReading(200)
     await addRandomMouseMovement(page)
 
-    await page.waitForSelector(selectors.loginUsername)
+    await page.locator(selectors.loginUsername).waitFor()
 
     await humanType(page, selectors.loginUsername, credentials.username, {
       minDelay: 80,
@@ -54,10 +54,9 @@ export async function loginWebflow(browser, options) {
     logger.info('Login complete')
 
     await takeScreenshot(page, 'post-login', options)
-  } finally {
-    // Always close the login page
-    if (!page.isClosed()) {
-      await page.close()
-    }
+    // Keep the page open to maintain the login session
+  } catch (error) {
+    logger.error('Login failed:', error)
+    throw error
   }
 }

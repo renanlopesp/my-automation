@@ -3,9 +3,8 @@ function evalAttribute(el, attributeName) {
 }
 
 export async function getAttributeFromSelector(page, selector, attribute) {
-  const results = await (
-    await page.$$(selector)
-  ).reduce(async (result, item) => {
+  const elements = await page.locator(selector).all()
+  const results = await elements.reduce(async (result, item) => {
     const resulted = await result
     const resolved = await item.evaluate(evalAttribute, attribute)
     resulted.push(resolved)

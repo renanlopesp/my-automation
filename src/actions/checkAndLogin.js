@@ -1,11 +1,11 @@
-import { preparePage, takeScreenshot } from '#ops'
+import { takeScreenshot } from '#ops'
 import { logger, sleep } from '#utils'
 import { loginWebflow } from './loginWebflow.js'
 import { createSafePage } from '../utils/safePage.js'
 
-export async function checkAndLogin(browser, options) {
+export async function checkAndLogin(page, browser, options) {
   const { selectors } = options
-  const page = await preparePage(browser)
+  // Use the existing page instead of creating a new one
 
   const safePage = createSafePage(page)
 
@@ -16,33 +16,29 @@ export async function checkAndLogin(browser, options) {
     await takeScreenshot(page, 'login-check', options)
 
     try {
-      await page.waitForSelector(selectors.container, { timeout: 5000 })
+      await page.locator(selectors.container).waitFor({ timeout: 5000 })
       logger.info('Already logged in to Webflow')
       return true
     } catch (err) {
       try {
-        await page.waitForSelector(selectors.loginUsername, { timeout: 3000 })
+        await page.locator(selectors.loginUsername).waitFor({ timeout: 3000 })
         logger.info('Not logged in, redirected to login page')
       } catch (loginErr) {
         logger.info('Navigating to login page')
         await safePage.goto('https://webflow.com/login', {}, 'Login Page')
 
-        await page.waitForSelector(selectors.loginUsername, { timeout: 5000 })
+        await page.locator(selectors.loginUsername).waitFor({ timeout: 5000 })
       }
 
-      await page.close()
+      // Keep the page open to maintain session
 
       logger.info('Logging in to Webflow...')
-      await loginWebflow(browser, options)
+      await loginWebflow(page, browser, options)
       return true
     }
   } catch (err) {
     logger.error('Error during login check:', err)
-    await page.close()
+    // Keep the page open to maintain session
     throw err
-  } finally {
-    if (!page.isClosed()) {
-      await page.close()
-    }
   }
 }

@@ -1,7 +1,8 @@
 import { NODE_ENV, ROUND_DELAY } from '#config'
-import { closeChrome, prepareBrowser, startChrome } from '#ops'
-import { logger, sleep, setupGracefulShutdown, isShutdown } from '#utils'
+import { closeChrome, prepareBrowser, startChrome, isChomeRunning } from '#ops'
+import { logger, sleep, setupGracefulShutdown, isShutdown, registerShutdownCallback } from '#utils'
 import systemState from './state.js'
+import { tabManager } from './utils/tabManager.js'
 
 import { receive } from './receive.js'
 import { rename } from './rename.js'
@@ -21,18 +22,62 @@ async function main() {
 
   // Setup graceful shutdown handlers
   setupGracefulShutdown()
+  
+  // Register cleanup on shutdown
+  registerShutdownCallback(async () => {
+    logger.info('Closing all tabs...')
+    await tabManager.closeAll()
+    logger.info('Closing Chrome process...')
+    await closeChrome()
+  })
 
-  // start browser
-  logger.info('Starting Chrome browser...')
-  await startChrome()
-  const browser = await prepareBrowser({ port: 9922 })
-  systemState.setBrowser(browser)
-  systemState.updateStatus('idle')
+  // Check if Chrome is already running or start new one
+  let browser
+  logger.info('Checking for existing Chrome instance...')
+  
+  try {
+    // Try to connect to existing Chrome first
+    const isRunning = await isChomeRunning()
+    if (isRunning) {
+      logger.info('Found existing Chrome instance, connecting...')
+      browser = await prepareBrowser({ port: 9922 })
+      logger.info('Connected to existing Chrome instance')
+    } else {
+      // Start new Chrome if not running
+      logger.info('No Chrome instance found, starting new one...')
+      await startChrome()
+      logger.info('Chrome started successfully')
+      browser = await prepareBrowser({ port: 9922 })
+      logger.info('Connected to new Chrome instance')
+    }
+    
+    systemState.setBrowser(browser)
+    systemState.updateStatus('idle')
+    
+    // Initialize tab manager with browser instance
+    tabManager.setBrowser(browser)
+    logger.info('Tab manager initialized with browser instance')
+  } catch (error) {
+    logger.error('Failed to setup Chrome:', error.message)
+    logger.error('Please make sure Chrome is installed at /usr/bin/google-chrome')
+    logger.error('You can install it with: sudo apt-get install google-chrome-stable')
+    await closeChrome()
+    process.exit(1)
+  }
 
   let consecutiveErrors = 0
   const MAX_CONSECUTIVE_ERRORS = 5
 
   while (!isShutdown() && consecutiveErrors < MAX_CONSECUTIVE_ERRORS) {
+    // Log tab manager statistics periodically
+    const tabStats = tabManager.getStats()
+    logger.info(`Tab pool status: ${JSON.stringify(tabStats)}`)
+    
+    // Clean up any closed tabs
+    const cleaned = tabManager.cleanup()
+    if (cleaned > 0) {
+      logger.info(`Cleaned up ${cleaned} closed tabs from pool`)
+    }
 
     // receive
     try {

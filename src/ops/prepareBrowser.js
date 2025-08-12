@@ -1,45 +1,37 @@
-// Use puppeteer-extra with stealth plugin for anti-detection
-import puppeteer from 'puppeteer-extra'
-import StealthPlugin from 'puppeteer-extra-plugin-stealth'
+// Use patchright for undetected browser automation
+import { chromium } from 'patchright'
 
-import { logger, sleep } from '#utils'
+import { logger } from '#utils'
 
-// Enable stealth plugin with all available evasions
-puppeteer.use(StealthPlugin())
-
-/** @typedef {import("puppeteer").Browser} Browser */
+/** @typedef {import("patchright").Browser} Browser */
 
 /**
  * Prepares a new browser with a specified set of options and plugins.
  * @returns {Promise<Browser>} A Promise that resolves to the new page object.
  */
 export async function prepareBrowser({ port = 9922 } = {}) {
-  logger.info('Preparing Chrome connection with stealth mode')
+  logger.info('Preparing Chrome connection with Patchright (undetected mode)')
 
-  let browserWSEndpoint
+  const endpointURL = `http://localhost:${port}`
 
-  for (let i = 0; i < 3; i++) {
-    try {
-      const response = await fetch(`http://localhost:${port}/json/version`)
-      const json = await response.json()
-      browserWSEndpoint = json.webSocketDebuggerUrl
-      break
-    } catch (error) {
-      logger.info(`Attempt ${i + 1} failed to access Chrome at port ${port}`)
-      if (i === 2) {
-        throw error
-      }
-      await sleep(2000)
-    }
+  // Connect to existing Chrome instance
+  try {
+    const response = await fetch(`${endpointURL}/json/version`)
+    const json = await response.json()
+    logger.info(`Chrome found: ${json.Browser}`)
+    
+    logger.info(`Connecting to Chrome at: ${endpointURL}`)
+    const browser = await chromium.connectOverCDP({
+      endpointURL,
+    })
+    
+    logger.info(`Connected to Chrome with Patchright undetected mode`)
+    return browser
+    
+  } catch (error) {
+    logger.error(`Failed to connect to Chrome at ${endpointURL}:`, error.message)
+    logger.error('Make sure Chrome is running with --remote-debugging-port=9922')
+    logger.error('You can start Chrome with: npm run start:chrome')
+    throw new Error(`Chrome connection failed: ${error.message}`)
   }
-
-  logger.info(`Connecting to Chrome at: ${browserWSEndpoint}`)
-
-  const browser = await puppeteer.connect({
-    browserWSEndpoint,
-  })
-
-  logger.info(`Chrome connected with stealth mode enabled`)
-
-  return browser
 }

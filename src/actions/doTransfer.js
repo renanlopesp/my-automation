@@ -10,7 +10,7 @@ export async function doTransfer(page, options, url) {
   // click transfer button
   try {
     await safePage.goto(url, {}, 'Transfer Page')
-    await page.waitForSelector(selectors.transferButton)
+    await page.locator(selectors.transferButton).waitFor()
     await page.click(selectors.transferButton)
   } catch (err) {
     throw new Error('Transfer button not found')
@@ -19,13 +19,13 @@ export async function doTransfer(page, options, url) {
   // type destination email
   const targetEmail = options.transfer.toUser.profile.webflow.email
   try {
-    await page.waitForSelector(selectors.transferInput)
+    await page.locator(selectors.transferInput).waitFor()
     await page.click(selectors.transferInput)
     if (!targetEmail) {
       throw new Error('Missing target email')
     }
 
-    await page.type(selectors.transferInput, targetEmail, { delay: 33 })
+    await page.locator(selectors.transferInput).pressSequentially(targetEmail, { delay: 33 })
   } catch (err) {
     throw new Error('Transfer field not found')
   }
@@ -33,7 +33,7 @@ export async function doTransfer(page, options, url) {
   // click to transfer
   try {
     const xpathTransfer = `xpath///button[contains(span/span/text(),'Transfer to ${targetEmail}')]`
-    await page.waitForSelector(xpathTransfer, { timeout: 1000 * 3 })
+    await page.locator(xpathTransfer).waitFor({ timeout: 1000 * 3 })
     await page.click(xpathTransfer)
     await sleep(1000 * 3)
   } catch (err) {

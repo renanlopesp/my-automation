@@ -88,7 +88,7 @@ export class CaptchaDetector {
       // Check each selector
       for (const selector of selectors) {
         try {
-          const element = await page.$(selector)
+          const element = await page.locator(selector).first()
           if (element) {
             // Additional check to ensure element is visible
             const isVisible = await page.evaluate(el => {
@@ -341,7 +341,7 @@ export class CaptchaDetector {
 
         for (const selector of selectors) {
           try {
-            const element = await page.$(selector)
+            const element = await page.locator(selector).first()
             if (element) {
               const isVisible = await page.evaluate(el => {
                 const rect = el.getBoundingClientRect()

@@ -6,7 +6,7 @@ export async function duplicateTemplate(page, options) {
   const menuButtonSelector = `${selectors.card} >div:nth-child(1) ${selectors.cardMenuButton}`
 
   try {
-    await page.waitForSelector(menuButtonSelector, { timeout: 1000 * 2 })
+    await page.locator(menuButtonSelector).waitFor({ timeout: 1000 * 2 })
     await takeScreenshot(page, 'duplicate-0-menu-selector', options)
     await page.click(menuButtonSelector)
   } catch (err) {
@@ -17,7 +17,7 @@ export async function duplicateTemplate(page, options) {
   try {
     await sleep(500)
     const duplicateSelector = `${selectors.cardMenuButtonDuplicate}`
-    await page.waitForSelector(duplicateSelector)
+    await page.locator(duplicateSelector).waitFor()
     await takeScreenshot(page, 'duplicate-1-duplicate-menu', options)
     await page.click(duplicateSelector)
   } catch (err) {
@@ -27,7 +27,7 @@ export async function duplicateTemplate(page, options) {
 
   try {
     await sleep(500)
-    await page.waitForSelector(selectors.modalDuplicate, { timeout: 1000 * 2 })
+    await page.locator(selectors.modalDuplicate).waitFor({ timeout: 1000 * 2 })
     await takeScreenshot(page, 'duplicate-2-duplicate-button', options)
     await page.click(selectors.modalDuplicate)
     await sleep(500)

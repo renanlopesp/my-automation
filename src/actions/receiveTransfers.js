@@ -12,7 +12,7 @@ async function nagivateToReceive(page, browser, options, atIndex = undefined) {
   const safePage = createSafePage(page)
 
   const { xpath } = options
-  await checkAndLogin(browser, options)
+  await checkAndLogin(page, browser, options)
 
   await safePage.goto(
     'https://webflow.com/dashboard/sites/transfers',
@@ -21,21 +21,21 @@ async function nagivateToReceive(page, browser, options, atIndex = undefined) {
   )
 
   try {
-    await page.waitForSelector(`xpath/${xpath.receiveContainer}`, {
+    await page.locator(`xpath/${xpath.receiveContainer}`).waitFor({
       timeout: SECONDS_30,
     })
   } catch (err) {
-    logger.error(
-      'Failed to find receiveContainer, taking screenshot for debugging...',
-    )
-    await takeScreenshot(page, 'debug-receive-container-missing', options)
-    throw new Error(`receiveContainer not found: ${xpath.receiveContainer}`)
+    // No pending transfers - this is a normal situation
+    logger.info('No pending transfers found (receiveContainer not present)')
+    
+    // Return false to indicate no templates available
+    return false
   }
 
   await closeWhatsNewDialog(page, options)
 
   try {
-    await page.waitForSelector(`xpath/${xpath.receiveZero}`, {
+    await page.locator(`xpath/${xpath.receiveZero}`).waitFor({
       timeout: SECOND * 10, // Increase timeout slightly
     })
   } catch (err) {
@@ -52,6 +52,9 @@ async function nagivateToReceive(page, browser, options, atIndex = undefined) {
   } else {
     logger.info(`Cannot reach transfers page`)
   }
+  
+  // Return true to indicate templates are available
+  return true
 }
 
 async function transferIn(page, options, atIndex) {
@@ -73,7 +76,7 @@ async function transferIn(page, options, atIndex) {
 
   // open select menu
   const selectButton = `xpath/${foundXpath}//button[@role="combobox"]`
-  await page.waitForSelector(selectButton, {
+  await page.locator(selectButton).waitFor({
     timeout: SECONDS_30,
   })
   await page.click(selectButton)
@@ -83,7 +86,7 @@ async function transferIn(page, options, atIndex) {
 
   // select templace
   const templaceOption = `xpath/${xpath.templaceOption}`
-  await page.waitForSelector(templaceOption, { timeout: SECONDS_30 })
+  await page.locator(templaceOption).waitFor({ timeout: SECONDS_30 })
   await page.click(templaceOption)
   await sleep(200)
   const [optionOpen] = await getAttributeFromSelector(
@@ -99,7 +102,7 @@ async function transferIn(page, options, atIndex) {
 
   // accepting transfer
   const acceptButton = `xpath/${foundXpath}//button[span/span[contains(text(), "Accept")]]`
-  await page.waitForSelector(acceptButton, { timeout: SECONDS_30 })
+  await page.locator(acceptButton).waitFor({ timeout: SECONDS_30 })
   await page.click(acceptButton)
   await takeScreenshot(page, `receive${indexString}-4-accept`, options)
 
@@ -108,8 +111,8 @@ async function transferIn(page, options, atIndex) {
 }
 
 /** */
-export async function receiveTransfers(browser, options) {
-  const page = await preparePage(browser)
+export async function receiveTransfers(page, browser, options) {
+  // Use the existing page instead of creating a new one
   const { xpath } = options
   let transferLeft = true
   let receivedTemplates = []
@@ -130,7 +133,11 @@ export async function receiveTransfers(browser, options) {
         screenshotDir: defaultScreenshotDir,
       }
 
-      await nagivateToReceive(page, browser, options, atIndex)
+      const hasTemplates = await nagivateToReceive(page, browser, options, atIndex)
+      if (!hasTemplates) {
+        // No templates available, return empty
+        return { receivedTemplates: [], options }
+      }
 
       receivedTemplates = await getAttributeFromSelector(
         page,
@@ -141,8 +148,8 @@ export async function receiveTransfers(browser, options) {
 
       transferLeft = receivedTemplates.length > 0
       if (!transferLeft) {
-        logger.info(`Transfer list empty, closing`)
-        await page.close()
+        logger.info(`Transfer list empty`)
+        // Keep the page open to maintain session
         return { receivedTemplates, options }
       }
 
@@ -165,14 +172,10 @@ export async function receiveTransfers(browser, options) {
 
     return { receivedTemplates, options }
   } catch (err) {
-    await page.close()
+    // Keep the page open to maintain session
     logger.error(`TransferReceive error: ${err.message}`)
     throw new Error(
-      `Error on receiving: ${options.id}, on item: ${options.templateName}`,
+      `Error on receiving: ${options?.transferId || 'unknown'}, error: ${err.message}`,
     )
-  } finally {
-    if (!page.isClosed) {
-      await page.close()
-    }
   }
 }

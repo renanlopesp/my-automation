@@ -1,4 +1,4 @@
-import { takeScreenshot, preparePage } from '#ops'
+import { takeScreenshot } from '#ops'
 import { logger, sleep } from '#utils'
 import { SECOND, SECONDS_30 } from '#data'
 import {
@@ -11,12 +11,12 @@ import {
 } from '#actions'
 import { createSafePage } from '../utils/safePage.js'
 
-export async function transferTemplate(browser, options) {
+export async function transferTemplate(page, browser, options) {
   const { selectors } = options
 
-  await checkAndLogin(browser, options)
+  await checkAndLogin(page, browser, options)
 
-  const page = await preparePage(browser)
+  // Use the existing page instead of creating a new one
 
   const safePage = createSafePage(page)
 
@@ -26,7 +26,7 @@ export async function transferTemplate(browser, options) {
       {},
       options.templateName || 'Transfer Dashboard',
     )
-    await page.waitForSelector(selectors.container, {
+    await page.locator(selectors.container).waitFor({
       timeout: SECONDS_30,
     })
 
@@ -53,19 +53,15 @@ export async function transferTemplate(browser, options) {
 
     await doTransfer(page, options, templateInternalUrl)
 
-    await page.close()
+    // Keep the page open to maintain session
     return options
   } catch (err) {
     await takeScreenshot(page, '99-transfer-error', options)
-    await page.close()
+    // Keep the page open to maintain session
 
     logger.error(err)
     throw new Error(
       `transferTemplate Error: ${options?.id}, on item: ${options?.templateName}`,
     )
-  } finally {
-    if (!page.isClosed) {
-      await page.close()
-    }
   }
 }

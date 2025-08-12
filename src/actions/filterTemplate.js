@@ -5,8 +5,8 @@ export async function filterTemplate(page, options, name) {
   const { selectors } = options
 
   try {
-    await page.waitForSelector(selectors.card, { timeout: ONE_SECOND * 5 })
-    await page.waitForSelector(selectors.dashboardSearchBar, {
+    await page.locator(selectors.card).waitFor({ timeout: ONE_SECOND * 5 })
+    await page.locator(selectors.dashboardSearchBar).waitFor({
       timeout: ONE_SECOND * 5,
     })
 
@@ -20,7 +20,7 @@ export async function filterTemplate(page, options, name) {
 
   const nameToType = name || options.templateName
   try {
-    await page.type(selectors.dashboardSearchBar, nameToType, {
+    await page.locator(selectors.dashboardSearchBar).pressSequentially(nameToType, {
       delay: 33,
     })
     await takeScreenshot(page, `filter-1-type`, options)
@@ -33,9 +33,9 @@ export async function filterTemplate(page, options, name) {
 
   try {
     const menuButtonSelector = `${selectors.card} >div:nth-child(1) ${selectors.cardMenuButton}`
-    await page.waitForSelector(menuButtonSelector, {
+    await page.locator(menuButtonSelector).waitFor({
       timeout: 1000 * 2,
-      visible: true,
+      state: 'visible',
     })
     await takeScreenshot(page, `filter-2-found`, options)
   } catch (err) {

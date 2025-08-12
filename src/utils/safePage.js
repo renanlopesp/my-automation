@@ -134,7 +134,7 @@ export class SafePage {
     try {
       logger.info(`⏳ Waiting for selector: ${selector}`)
 
-      const element = await this.page.waitForSelector(selector, {
+      const element = await this.page.locator(selector).waitFor({
         timeout: 10000,
         ...options,
       })
@@ -150,7 +150,7 @@ export class SafePage {
         if (captchaResult.detected && captchaResult.resolved) {
           logger.info('✅ CAPTCHA resolved, retrying selector wait...')
           await sleep(3000)
-          return await this.page.waitForSelector(selector, options)
+          return await this.page.locator(selector).waitFor(options)
         }
       }
 
@@ -166,7 +166,7 @@ export class SafePage {
       if (captchaResult.detected && captchaResult.resolved) {
         logger.info('✅ CAPTCHA resolved, retrying selector wait...')
         await sleep(3000)
-        return await this.page.waitForSelector(selector, options)
+        return await this.page.locator(selector).waitFor(options)
       }
 
       throw error
@@ -212,7 +212,7 @@ export class SafePage {
   async type(selector, text, options = {}, contextName = 'Type Action') {
     try {
       logger.info(`⌨️  Typing in: ${selector}`)
-      await this.page.type(selector, text, options)
+      await this.page.locator(selector).pressSequentially(text, options)
 
       // Check for CAPTCHA after typing (sometimes triggered by form interactions)
       const captchaResult = await this.captchaDetector.detectCaptcha(

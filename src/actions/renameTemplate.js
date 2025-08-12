@@ -15,7 +15,7 @@ export async function renameTemplate(page, options) {
   try {
     await sleep(SECOND * 2)
     await safePage.goto('https://webflow.com/dashboard', {}, 'Rename Dashboard')
-    await page.waitForSelector(selectors.container, {
+    await page.locator(selectors.container).waitFor({
       timeout: SECONDS_30,
     })
     await takeScreenshot(page, `rename-0-dash`, options)
@@ -38,7 +38,7 @@ export async function renameTemplate(page, options) {
   try {
     await sleep(500)
     const menuButtonSelector = `${selectors.card} >div:nth-child(1) ${selectors.cardMenuButton}`
-    await page.waitForSelector(menuButtonSelector, { timeout: 1000 * 2 })
+    await page.locator(menuButtonSelector).waitFor({ timeout: 1000 * 2 })
     await page.click(menuButtonSelector)
     await takeScreenshot(page, `rename-2-menu`, options)
   } catch (err) {
@@ -51,7 +51,7 @@ export async function renameTemplate(page, options) {
   try {
     await sleep(500)
     const settingsSelector = `${selectors.cardMenuButtonSettings}`
-    await page.waitForSelector(settingsSelector)
+    await page.locator(settingsSelector).waitFor()
     await page.click(settingsSelector)
     await takeScreenshot(page, `rename-3-settings`, options)
   } catch (err) {
@@ -63,11 +63,11 @@ export async function renameTemplate(page, options) {
 
   try {
     const fieldSelector = `input[value*="${copyName}"]`
-    await page.waitForSelector(fieldSelector)
+    await page.locator(fieldSelector).waitFor()
     await page.click(fieldSelector)
     await takeScreenshot(page, `rename-4-field`, options)
 
-    const input = await page.$(fieldSelector)
+    const input = await page.locator(fieldSelector).first()
     const [currentValue] = await getAttributeFromSelector(
       page,
       fieldSelector,
@@ -78,7 +78,7 @@ export async function renameTemplate(page, options) {
       await page.keyboard.press('Backspace', { delay: 11 })
     }
     await takeScreenshot(page, `rename-5-clear`, options)
-    await input.type(options.templateTransferName, { delay: 13 })
+    await input.pressSequentially(options.templateTransferName, { delay: 13 })
     await takeScreenshot(page, `rename-6-typed`, options)
   } catch (err) {
     const message = `Can not populate the field, template: ${options.id}, on item: ${options.templateName}`
@@ -90,7 +90,7 @@ export async function renameTemplate(page, options) {
   try {
     const templateInternalUrl = await page.url()
     const xpathSave = `xpath///button[contains(span/span/text(),'Save')]`
-    await page.waitForSelector(xpathSave, { timeout: 1000 * 3 })
+    await page.locator(xpathSave).waitFor({ timeout: 1000 * 3 })
     await page.click(xpathSave)
     await takeScreenshot(page, `rename-7-save`, options)
 

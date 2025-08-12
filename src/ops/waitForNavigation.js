@@ -7,7 +7,12 @@ export async function waitForNavigation(
   sleepout = 1000
 ) {
   try {
-    await page.waitForNavigation({ waitUntil, timeout });
+    // Convert Puppeteer waitUntil values to Patchright/Playwright values
+    const state = waitUntil === 'networkidle0' || waitUntil === 'networkidle2' 
+      ? 'networkidle' 
+      : waitUntil;
+    
+    await page.waitForLoadState(state, { timeout });
   } catch (err) {
     await sleep(sleepout);
   }

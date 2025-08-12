@@ -7,9 +7,11 @@ import {
   uploadLogs,
   getQueueStats,
 } from '#dataActions'
+import { preparePage } from '#ops'
 import { logger, switchTransportTo } from '#utils'
 import { WEBFLOW_USERNAME, WEBFLOW_PASSWORD } from '#config'
 import systemState from './state.js'
+import { tabManager } from './utils/tabManager.js'
 
 export async function rename(envName, browser) {
   if (!envName) {
@@ -57,7 +59,11 @@ export async function rename(envName, browser) {
     }))
   })
 
-  for await (let transfer of transfers) {
+  // Create a page for the rename operations
+  const page = await preparePage(browser)
+  
+  try {
+    for await (let transfer of transfers) {
     const { transferDir, transferId, screenshotDir } = await transferHeader(
       transfer,
       basePath,
@@ -119,7 +125,7 @@ export async function rename(envName, browser) {
         }
       )
 
-      const parcel = await renameTransfer(envName, browser, options, transfer)
+      const parcel = await renameTransfer(envName, page, browser, options, transfer)
       await setReceiveStatus(
         envName,
         transferId,
@@ -189,6 +195,13 @@ export async function rename(envName, browser) {
         TransferReceiveStatus.CANCELED,
         true,
       )
+    }
+    }
+  } finally {
+    // Release the tab back to the pool instead of closing
+    if (page) {
+      await tabManager.releaseTab(page)
+      logger.info('Released tab back to pool after rename operation')
     }
   }
 
