@@ -32,14 +32,49 @@ export async function filterTemplate(page, options, name) {
   }
 
   try {
-    const menuButtonSelector = `${selectors.card} >div:nth-child(1) ${selectors.cardMenuButton}`
-    await page.waitForSelector(menuButtonSelector, {
-      timeout: 1000 * 2,
-      visible: true,
-    })
+    const cardSelector = `${selectors.card} >div:nth-child(1)`
+    const menuButtonSelector = `${cardSelector} ${selectors.cardMenuButton}`
+    
+    // First check if the card exists (template was found in search)
+    try {
+      await page.waitForSelector(cardSelector, { 
+        timeout: ONE_SECOND * 2,
+        visible: true
+      })
+    } catch (err) {
+      logger.warn('No template card found after filtering')
+      throw new Error(
+        `filterTemplate Error: Template ${options.templateName} not found in search results`,
+      )
+    }
+    
+    // Hover over the card to reveal the menu button
+    await page.hover(cardSelector)
+    await sleep(500)
+    
+    // Try to find the menu button with increased timeout
+    try {
+      await page.waitForSelector(menuButtonSelector, {
+        timeout: ONE_SECOND * 5,
+        visible: true,
+      })
+    } catch (err) {
+      // Retry with another hover if first attempt fails
+      logger.warn('Menu button not found, retrying with hover...')
+      await page.hover(cardSelector)
+      await sleep(1000)
+      await page.waitForSelector(menuButtonSelector, {
+        timeout: ONE_SECOND * 3,
+        visible: true,
+      })
+    }
+    
     await takeScreenshot(page, `filter-2-found`, options)
   } catch (err) {
     logger.warn(err)
+    if (err.message && err.message.includes('not found in search results')) {
+      throw err
+    }
     throw new Error(
       `filterTemplate Error: Template ${options.templateName} not found`,
     )

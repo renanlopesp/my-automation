@@ -1,5 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
-import { Activity, Package, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react'
+import {
+  Activity,
+  Package,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react'
 import { api } from '@/services/api'
 import { useStore } from '@/store'
 import StatsCard from '@/components/StatsCard'
@@ -53,16 +59,19 @@ export default function Overview() {
   }
 
   // Filter queues based on selected environment
-  const filteredQueues = selectedEnv === 'all' 
-    ? allQueues || queues 
-    : { [selectedEnv]: (allQueues || queues)[selectedEnv] }
+  const filteredQueues =
+    selectedEnv === 'all'
+      ? allQueues || queues
+      : { [selectedEnv]: (allQueues || queues)[selectedEnv] }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Overview</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Overview
+          </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Monitor your automation system in real-time
           </p>
@@ -122,10 +131,18 @@ export default function Overview() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
               {env} Environment
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3 flex flex-col">
               <QueueCard
                 type="receive"
-                stats={stats?.receive || { total: 0, pending: 0, processing: 0, complete: 0, error: 0 }}
+                stats={
+                  stats?.receive || {
+                    total: 0,
+                    pending: 0,
+                    processing: 0,
+                    complete: 0,
+                    error: 0,
+                  }
+                }
                 env={env}
               />
               <QueueCard
@@ -135,7 +152,15 @@ export default function Overview() {
               />
               <QueueCard
                 type="send"
-                stats={stats?.send || { total: 0, pending: 0, processing: 0, complete: 0, error: 0 }}
+                stats={
+                  stats?.send || {
+                    total: 0,
+                    pending: 0,
+                    processing: 0,
+                    complete: 0,
+                    error: 0,
+                  }
+                }
                 env={env}
               />
             </div>
