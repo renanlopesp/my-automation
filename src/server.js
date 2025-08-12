@@ -4,10 +4,7 @@ import cors from 'cors'
 import { logger, logBuffer } from '#utils'
 import LogFileWatcher from './utils/logFileWatcher.js'
 import systemState from './state.js'
-import { receive } from './receive.js'
-import { rename } from './rename.js'
-import { send } from './send.js'
-import { prepareBrowser, startChrome } from '#ops'
+import { taskQueue } from './utils/taskQueue.js'
 import { NODE_ENV } from '#config'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -129,95 +126,96 @@ app.get('/api/health', (req, res) => {
   res.json(health)
 })
 
+// Task queue endpoints
+app.get('/api/queue/status', async (req, res) => {
+  try {
+    const status = await taskQueue.getStatus()
+    res.json(status)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/queue/clear', async (req, res) => {
+  try {
+    await taskQueue.clear()
+    res.json({ message: 'Queue cleared successfully' })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Trigger endpoints
 app.post('/api/trigger/receive', async (req, res) => {
   try {
-    if (systemState.state.isRunning) {
-      return res.status(400).json({ error: 'System is already running a task' })
-    }
+    // Add task to queue instead of executing directly
+    const task = await taskQueue.add({
+      type: 'receive',
+      triggeredBy: 'api',
+      timestamp: new Date().toISOString()
+    })
 
-    res.json({ message: 'Receive task started' })
-
-    // Run in background
-    ;(async () => {
-      try {
-        systemState.updateStatus('running', { currentTask: 'receive' })
-        if (!systemState.state.browser) {
-          await startChrome()
-          const browser = await prepareBrowser({ port: 9922 })
-          systemState.setBrowser(browser)
-        }
-        await receive(systemState.state.browser)
-      } catch (error) {
-        logger.error('Receive task error:', error)
-        systemState.addError(error)
-      } finally {
-        systemState.updateStatus('idle')
-      }
-    })()
+    logger.info(`API: Queued receive task ${task.id}`)
+    
+    res.json({ 
+      message: 'Receive task queued',
+      taskId: task.id,
+      status: 'queued'
+    })
   } catch (error) {
+    logger.error('API: Failed to queue receive task:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
 app.post('/api/trigger/rename', async (req, res) => {
   try {
-    if (systemState.state.isRunning) {
-      return res.status(400).json({ error: 'System is already running a task' })
-    }
-
     const { env = 'local' } = req.body
-    res.json({ message: 'Rename task started', env })
+    
+    // Add task to queue instead of executing directly
+    const task = await taskQueue.add({
+      type: 'rename',
+      env,
+      triggeredBy: 'api',
+      timestamp: new Date().toISOString()
+    })
 
-    // Run in background
-    ;(async () => {
-      try {
-        systemState.updateStatus('running', { currentTask: 'rename' })
-        if (!systemState.state.browser) {
-          await startChrome()
-          const browser = await prepareBrowser({ port: 9922 })
-          systemState.setBrowser(browser)
-        }
-        await rename(env, systemState.state.browser)
-      } catch (error) {
-        logger.error('Rename task error:', error)
-        systemState.addError(error)
-      } finally {
-        systemState.updateStatus('idle')
-      }
-    })()
+    logger.info(`API: Queued rename task ${task.id} for env: ${env}`)
+    
+    res.json({ 
+      message: 'Rename task queued',
+      taskId: task.id,
+      env,
+      status: 'queued'
+    })
   } catch (error) {
+    logger.error('API: Failed to queue rename task:', error)
     res.status(500).json({ error: error.message })
   }
 })
 
 app.post('/api/trigger/send', async (req, res) => {
   try {
-    if (systemState.state.isRunning) {
-      return res.status(400).json({ error: 'System is already running a task' })
-    }
-
     const { env = 'local' } = req.body
-    res.json({ message: 'Send task started', env })
+    
+    // Add task to queue instead of executing directly
+    const task = await taskQueue.add({
+      type: 'send',
+      env,
+      triggeredBy: 'api',
+      timestamp: new Date().toISOString()
+    })
 
-    // Run in background
-    ;(async () => {
-      try {
-        systemState.updateStatus('running', { currentTask: 'send' })
-        if (!systemState.state.browser) {
-          await startChrome()
-          const browser = await prepareBrowser({ port: 9922 })
-          systemState.setBrowser(browser)
-        }
-        await send(env, systemState.state.browser)
-      } catch (error) {
-        logger.error('Send task error:', error)
-        systemState.addError(error)
-      } finally {
-        systemState.updateStatus('idle')
-      }
-    })()
+    logger.info(`API: Queued send task ${task.id} for env: ${env}`)
+    
+    res.json({ 
+      message: 'Send task queued',
+      taskId: task.id,
+      env,
+      status: 'queued'
+    })
   } catch (error) {
+    logger.error('API: Failed to queue send task:', error)
     res.status(500).json({ error: error.message })
   }
 })
